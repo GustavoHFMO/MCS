@@ -13,60 +13,61 @@ import pandas as pd
 def main():
     
     # definindo o dataset
-    #i = 3
     datasets = ['SEA', 'SEARec', 'STAGGER', 'For']
     step_sizes = [500, 500, 220, 100, 2200]
-    train_sizes = [250, 250, 20, 50, 200] 
+    train_sizes = [250, 250, 20, 50, 200]
     
-    # definindo o mecanismo de classificacao
-    j = 0
-    engines = ['knorae', 'knorau', 'ola', 'lca', 'posteriori', 'priori']
+    for i in range(len(datasets)): 
     
-    # defininindo o mecanismo de poda
-    k = 0
-    pruning = ['age', 'accuracy']
-    
-    # for para cada dataset
-    for i in range(len(datasets)):
-    
-        #for para a quantidade de execucoes
-        for x in range(10):
-    
-            #1. importando o dataset
-            labels, _, stream_records = ARFFReader.read("projeto/data_streams/"+datasets[i]+".arff")
+        # definindo o mecanismo de classificacao
+        engines = ['knorae', 'knorau', 'ola', 'lca', 'posteriori', 'priori']
+        
+        for j in range(len(engines)):
+        
+            # defininindo o mecanismo de poda
+            pruning = ['age', 'accuracy']
             
-            #2. instanciando o mecanismo de classificacao
-            ce = ClassificationEngine(engines[j])
-         
-            #3. definindo o criterio de poda
-            pe = PrunningEngine(pruning[k]) 
-               
-            #4. instanciando o classificador base
-            bc = GaussianNB()
+            # for para cada dataset
+            for k in range(len(pruning)):
             
-            #5. instanciando o framework
-            dynse = Dynse(D=25,
-                          M=4, 
-                          K=5, 
-                          CE=ce, 
-                          PE=pe, 
-                          BC=bc)
+                #for para a quantidade de execucoes
+                for x in range(1):
             
-            # para acompanhar a execucao
-            dynse.NAME = dynse.NAME+"-"+datasets[i]+"-"+str(x)
-             
-            #6. executando o framework
-            dynse.prequential(labels=labels, 
-                              stream=stream_records, 
-                              step_size=step_sizes[i],
-                              train_size=train_sizes[i])
-            
-            # printando a acuracia final do sistema
-            print(dynse.accuracyGeneral())
-            
-            # salvando a predicao do sistema
-            df = pd.DataFrame(data={'target':dynse.TARGET, 'predictions': dynse.PREDICTIONS})
-            df.to_csv(dynse.NAME+".csv")
+                    #1. importando o dataset
+                    labels, _, stream_records = ARFFReader.read("projeto/data_streams/"+datasets[i]+".arff")
+                    
+                    #2. instanciando o mecanismo de classificacao
+                    ce = ClassificationEngine(engines[j])
+                 
+                    #3. definindo o criterio de poda
+                    pe = PrunningEngine(pruning[k]) 
+                       
+                    #4. instanciando o classificador base
+                    bc = GaussianNB()
+                    
+                    #5. instanciando o framework
+                    dynse = Dynse(D=25,
+                                  M=4, 
+                                  K=5, 
+                                  CE=ce, 
+                                  PE=pe, 
+                                  BC=bc)
+                    
+                    # para acompanhar a execucao
+                    dynse.NAME = dynse.NAME+"-"+datasets[i]+"-"+str(x)
+                     
+                    #6. executando o framework
+                    dynse.prequential(labels=labels, 
+                                      stream=stream_records, 
+                                      step_size=step_sizes[i],
+                                      train_size=train_sizes[i])
+                    
+                    # printando a acuracia final do sistema
+                    print(dynse.accuracyGeneral())
+                    
+                    # salvando a predicao do sistema
+                    df = pd.DataFrame(data={'target':dynse.TARGET, 'predictions': dynse.PREDICTIONS})
+                    df.to_csv(dynse.NAME+".csv")
         
 if __name__ == "__main__":
     main()        
