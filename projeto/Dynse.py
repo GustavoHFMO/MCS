@@ -10,12 +10,13 @@ from deslib.dcs.lca import LCA
 from deslib.dcs.ola import OLA 
 from deslib.des.knora_e import KNORAE
 from deslib.des.knora_u import KNORAU
-from sklearn.tree.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
 from projeto.streams.readers.arff_reader import ARFFReader
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import copy
 plt.style.use('seaborn-whitegrid')
 
 class PrunningEngine:
@@ -125,7 +126,7 @@ class ClassificationEngine:
             DS = APriori(P, k)
             
         # encontrando os classificadores competentes do DS escolhido
-        self.DS = DS            
+        self.DS = copy.deepcopy(DS)            
         self.DS.fit(x_sel, y_sel)
         
     def predict(self, x):
@@ -213,8 +214,11 @@ class Dynse:
         #obtendo os dados para treinamento e o de teste
         x, y = self.dividingPatternLabel(B_train)
 
+        # fazendo uma copia do classe do classificador
+        C = copy.deepcopy(BC)
+        
         # treinando o classificador
-        C = BC.fit(x, y)
+        C.fit(x, y)
         
         # retornando
         return C
@@ -338,7 +342,7 @@ class Dynse:
 def main():
     
     #1. importando o dataset
-    labels, _, stream_records = ARFFReader.read("data_streams/Dynse/SEA.arff")
+    labels, _, stream_records = ARFFReader.read("data_streams/SEA.arff")
     
     #2. instanciando o mecanismo de classificacao
     ce = ClassificationEngine('knorae')
@@ -347,7 +351,7 @@ def main():
     pe = PrunningEngine('accuracy') 
        
     #4. instanciando o classificador base
-    bc = DecisionTreeClassifier()
+    bc = GaussianNB()
     
     #2. instanciando o framework
     dynse = Dynse(D=25,

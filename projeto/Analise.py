@@ -9,12 +9,12 @@ import numpy as np
 
 # definindo o dataset
 i = 3
-datasets = ['SEA', 'SEARec', 'STAGGER', 'For']
+datasets = ['STAGGER', 'SEA', 'SEARec', 'For']
 step_sizes = [500, 500, 220, 100, 2200]
 train_sizes = [250, 250, 20, 50, 200] 
 
 # definindo o mecanismo de classificacao
-j = 0
+j = 5
 engines = ['knorae', 'knorau', 'ola', 'lca', 'posteriori', 'priori']
 
 # defininindo o mecanismo de poda
@@ -24,7 +24,9 @@ pruning = ['age', 'accuracy']
 acuracia_geral = []
 for x in range(1):
     # lendo os arquivos e computando a acuracia
-    arquivo = pd.read_csv("arquivos/Dynse-"+engines[j]+"-"+pruning[k]+"-"+datasets[i]+"-"+str(x)+".csv") 
+    string = "arquivos/Dynse-"+engines[j]+"-"+pruning[k]+"-"+datasets[i]+"-"+str(x)+".csv"
+    print(string)
+    arquivo = pd.read_csv(string) 
     target = arquivo['target']
     prediction = arquivo['predictions']
     acuracia_geral.append(accuracy_score(target, prediction))

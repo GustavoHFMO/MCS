@@ -13,7 +13,7 @@ import pandas as pd
 def main():
     
     # definindo o dataset
-    datasets = ['SEA', 'SEARec', 'STAGGER', 'For']
+    datasets = ['STAGGER', 'SEA', 'SEARec', 'For']
     step_sizes = [500, 500, 220, 100, 2200]
     train_sizes = [250, 250, 20, 50, 200]
     
@@ -23,9 +23,12 @@ def main():
         engines = ['knorae', 'knorau', 'ola', 'lca', 'posteriori', 'priori']
         
         for j in range(len(engines)):
-        
-            # defininindo o mecanismo de poda
-            pruning = ['age', 'accuracy']
+
+            # defininindo o mecanismo de poda        
+            if(engines[j]=='knorae'):
+                pruning = ['age', 'accuracy']
+            else:
+                pruning = ['age']
             
             # for para cada dataset
             for k in range(len(pruning)):
@@ -61,9 +64,6 @@ def main():
                                       stream=stream_records, 
                                       step_size=step_sizes[i],
                                       train_size=train_sizes[i])
-                    
-                    # printando a acuracia final do sistema
-                    print(dynse.accuracyGeneral())
                     
                     # salvando a predicao do sistema
                     df = pd.DataFrame(data={'target':dynse.TARGET, 'predictions': dynse.PREDICTIONS})
