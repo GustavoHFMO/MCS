@@ -13,11 +13,15 @@ import pandas as pd
 def main():
     
     # definindo o dataset
-    datasets = ['STAGGER', 'SEA', 'SEARec', 'For']
-    step_sizes = [500, 500, 220, 100, 2200]
-    train_sizes = [250, 250, 20, 50, 200]
+    #datasets = ['STAGGER', 'SEA', 'SEARec', 'For']
+    #step_sizes = [500, 500, 220, 100, 2200]
+    #train_sizes = [250, 250, 20, 50, 200]
     
-    for i in range(len(datasets)): 
+    datasets = ['For']
+    step_sizes = [2200]
+    train_sizes = [200]
+    
+    for i in range(0, len(datasets)): 
     
         # definindo o mecanismo de classificacao
         engines = ['knorae', 'knorau', 'ola', 'lca', 'posteriori', 'priori']
