@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 
 # definindo o dataset
-i = 3
+i = 2
 datasets = ['STAGGER', 'SEA', 'SEARec', 'For']
 step_sizes = [500, 500, 220, 100, 2200]
 train_sizes = [250, 250, 20, 50, 200] 

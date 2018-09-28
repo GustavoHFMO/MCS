@@ -251,6 +251,8 @@ class Dynse:
             index = [0 if int(i) == 4 else int(i) for i in data[:, -1]]
         elif(labels == ['0', '1', '2', '3', '4','5', '6', '7', '8', '9']):
             index = data[:, -1]
+        elif(labels == ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']):
+            index = [labels.index(i) for i in data[:, -1]]
         elif(labels == ['1', '2', '3', '4','5', '6', '7']):
             index = data[:, -1]
         elif(labels == ['n', 'p']):
