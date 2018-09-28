@@ -93,7 +93,7 @@ def main():
     step_sizes = [100, 100]
     train_sizes = [50, 50]
     
-    for i in range(len(datasets)): 
+    for i in range(1, len(datasets)): 
     
         # definindo o mecanismo de classificacao
         engines = ['knorae', 'knorau', 'ola', 'lca', 'posteriori', 'priori']
