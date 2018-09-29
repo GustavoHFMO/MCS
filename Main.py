@@ -33,7 +33,7 @@ def tratamentoDados(stream, vizinhos):
         train = stream[:,0:-1]
         
         # ajustando o knn sobre os dados
-        nbrs = NearestNeighbors(n_neighbors=vizinhos+20, algorithm='ball_tree')
+        nbrs = NearestNeighbors(n_neighbors=(2*vizinhos), algorithm='ball_tree')
         nbrs.fit(train)
         
         # sorteando uma isntancia aleatoria
@@ -56,6 +56,7 @@ def tratamentoDados(stream, vizinhos):
         # excluindo os itens adicionados
         stream = np.delete(stream, indices, 0)
         
+        '''
         # salvando as instancias de teste de forma aleatoria
         indices = []
         for x in range(30):
@@ -73,7 +74,7 @@ def tratamentoDados(stream, vizinhos):
                     
             # salvando no novo dataset
             new_stream.append(stream[j])
-            
+        '''    
         
         # excluindo os itens adicionados
         stream = np.delete(stream, indices, 0)
