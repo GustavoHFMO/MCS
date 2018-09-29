@@ -33,7 +33,7 @@ def tratamentoDados(stream, vizinhos):
         train = stream[:,0:-1]
         
         # ajustando o knn sobre os dados
-        nbrs = NearestNeighbors(n_neighbors=vizinhos, algorithm='ball_tree')
+        nbrs = NearestNeighbors(n_neighbors=vizinhos+20, algorithm='ball_tree')
         nbrs.fit(train)
         
         # sorteando uma isntancia aleatoria
@@ -58,7 +58,7 @@ def tratamentoDados(stream, vizinhos):
         
         # salvando as instancias de teste de forma aleatoria
         indices = []
-        for x in range(vizinhos):
+        for x in range(30):
             
             # gerando um numero aleatorio
             if(x == 0):
@@ -93,7 +93,7 @@ def main():
     step_sizes = [100, 100]
     train_sizes = [50, 50]
     
-    for i in range(1, len(datasets)): 
+    for i in range(len(datasets)): 
     
         # definindo o mecanismo de classificacao
         engines = ['knorae', 'knorau', 'ola', 'lca', 'posteriori', 'priori']
