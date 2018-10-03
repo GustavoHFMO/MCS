@@ -85,14 +85,14 @@ def tratamentoDados(stream, vizinhos):
 def main():
     
     # definindo o dataset
-    datasets = ['STAGGER', 'SEA', 'SEARec']
+    datasets = ['SEARec']
     step_sizes = [500, 500, 220]
     train_sizes = [250, 250, 20]
     
     for i in range(len(datasets)): 
     
         # definindo o mecanismo de classificacao
-        engines = ['knorau', 'ola', 'lca', 'posteriori', 'priori']
+        engines = ['priori']
         
         for j in range(len(engines)):
 

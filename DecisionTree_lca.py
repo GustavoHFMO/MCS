@@ -10,7 +10,7 @@ from projeto.Dynse import PrunningEngine
 from projeto.Dynse import Dynse
 import pandas as pd
 import numpy as np
-from sklearn.linear_model.perceptron import Perceptron
+from sklearn.tree.tree import DecisionTreeClassifier
 
 
 def tratamentoDados(stream, vizinhos):
@@ -85,14 +85,14 @@ def tratamentoDados(stream, vizinhos):
 def main():
     
     # definindo o dataset
-    datasets = ['STAGGER', 'SEA', 'SEARec']
-    step_sizes = [500, 500, 220, 100, 100, 100]
-    train_sizes = [250, 250, 20, 50, 50, 50]
+    datasets = ['SEARec']
+    step_sizes = [500, 500, 220]
+    train_sizes = [250, 250, 20]
     
     for i in range(len(datasets)): 
     
         # definindo o mecanismo de classificacao
-        engines = ['knorae']
+        engines = ['lca']
         
         for j in range(len(engines)):
 
@@ -119,7 +119,7 @@ def main():
                     pe = PrunningEngine(pruning[k]) 
                        
                     #4. instanciando o classificador base
-                    bc = Perceptron()
+                    bc = DecisionTreeClassifier()
                     
                     #5. instanciando o framework
                     dynse = Dynse(D=25,
@@ -140,7 +140,7 @@ def main():
                     
                     # salvando a predicao do sistema
                     df = pd.DataFrame(data={'target':dynse.TARGET, 'predictions': dynse.PREDICTIONS})
-                    df.to_csv("Perceptron-"+dynse.NAME+".csv")
+                    df.to_csv("DecisionTree-"+dynse.NAME+".csv")
         
 if __name__ == "__main__":
     main()        
