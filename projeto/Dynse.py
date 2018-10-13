@@ -11,7 +11,7 @@ from deslib.dcs.ola import OLA
 from deslib.des.knora_e import KNORAE
 from deslib.des.knora_u import KNORAU
 from sklearn.naive_bayes import GaussianNB
-from projeto.streams.readers.arff_reader import ARFFReader
+from Projeto.streams.readers.arff_reader import ARFFReader
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -268,7 +268,7 @@ class Dynse:
         # retornando o stream
         return data
         
-    def prequential(self, labels, stream, step_size, train_size):
+    def prequential_batch(self, labels, stream, step_size, train_size):
         '''
         metodo para executar o codigo
         :param: labels: rotulos existentes no stream
@@ -340,7 +340,79 @@ class Dynse:
                 
             # printando a execucao
             self.printIterative(i)
+    
+    def prequential_test_train(self, labels, stream, window_size, train_size):
+        '''
+        metodo para executar o codigo
+        :param: labels: rotulos existentes no stream
+        :param: stream: fluxo de dados
+        :param: batch_size: tamanho dos batches
+        '''
+
+        # salvando o stream e o tamanho do batch
+        self.STREAM = self.adjustStream(labels, stream)
+        
+        # janela inicial
+        W = []
+        
+        # pool inicial de classificadores
+        P = []
+    
+        # variable to store patterns for train
+        L = []
+        
+        # for para percorrer a stream
+        for i, X in enumerate(self.STREAM):
+
+            # split the current example on pattern and label
+            x, y = X[0:-1], int(X[-1])
+                            
+            # storing the patterns
+            L.append(X)
+            
+            # working to fill the window
+            W.append(X)
                 
+            # working with full window
+            if(i >= train_size):
+                
+                # ajustando a janela de validacao
+                x_sel, y_sel = self.adjustingWindowOne(W)
+                        
+                # ajustando o mecanismo de classificacao
+                self.CE.fit(x_sel, y_sel, P, self.K)
+                
+                # realizando a classificacao
+                y_pred = self.CE.predict(np.asarray([x]))
+                    
+                # salvando a previsao e o alvo
+                self.PREDICTIONS.append(y_pred[0])
+                self.TARGET.append(y)
+                
+                # training a new classifier
+                if(len(L) > train_size):
+                    # treinando um classificador 
+                    C = self.trainNewClassifier(self.BC, np.asarray(L))
+                    # erasing patterns
+                    L = []
+                    # podando o numero de classificadores
+                    P = self.PE.prunning(P, W, C, self.D)
+                        
+                # removendo o batch mais antigo 
+                self.removeOldestBatch(W)
+                
+            else:
+                # treinando um classificador 
+                C = self.trainNewClassifier(self.BC, np.asarray(L))
+                # erasing patterns
+                L = []
+                # podando o numero de classificadores
+                P = self.PE.prunning(P, W, C, self.D)    
+                
+            # printando a execucao
+            self.printIterative(i)
+     
+     
 def main():
     
     #1. importando o dataset
@@ -355,7 +427,7 @@ def main():
     #4. instanciando o classificador base
     bc = GaussianNB()
     
-    #2. instanciando o framework
+    #5. instanciando o framework
     dynse = Dynse(D=25,
                   M=4, 
                   K=5, 
@@ -363,11 +435,11 @@ def main():
                   PE=pe, 
                   BC=bc)
      
-    #3. executando o framework
-    dynse.prequential(labels=labels, 
-                      stream=stream_records, 
-                      step_size=220,
-                      train_size=20)
+    #6. executando o framework
+    dynse.prequential_batch(labels=labels, 
+                          stream=stream_records, 
+                          step_size=220,
+                          train_size=20)
     
     # printing the final accuracy
     print(dynse.accuracyGeneral())

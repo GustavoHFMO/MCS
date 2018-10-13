@@ -219,7 +219,7 @@ def gerar_boxplot_metrica_dtp(dataset, metrica):
         
         # plotting the legend
         if(i==5):
-            ax.legend(box["boxes"], ['Decision Tree', 'Perceptron'], loc='upper right')
+            ax.legend(box["boxes"], ['Decision Tree', 'Main'], loc='upper right')
         
         # creating a grid
         ax.yaxis.grid(True, alpha=0.1)
@@ -393,7 +393,7 @@ def gerar_boxplot_metrica_dtp_twodata(metrica):
         
         # plotting the legend
         if(i==5):
-            ax.legend(box["boxes"], ['Decision Tree', 'Perceptron'], loc='upper right')
+            ax.legend(box["boxes"], ['Decision Tree', 'Main'], loc='upper right')
         
         # creating a grid
         ax.yaxis.grid(True, alpha=0.1)

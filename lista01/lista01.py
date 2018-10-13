@@ -126,7 +126,7 @@ for h in range(len(nome_datasets)):
             # 3.2.1. End ###################################################################################
             
             
-            # 3.2.2. Bagging com Perceptron ################################################################
+            # 3.2.2. Bagging com Main ################################################################
             # numero do modelo na tabela 
             num_model = 1
             
@@ -142,7 +142,7 @@ for h in range(len(nome_datasets)):
             pred = bg.predict(x_test)
             
             # printando os resultados
-            acuracia, auc, f1measure, gmean = printar_resultados(y_test, pred, nome_datasets[h]+'-pct-'+str(pct_trainamento[i])+'- Bagging com Perceptron ['+str(j)+']')
+            acuracia, auc, f1measure, gmean = printar_resultados(y_test, pred, nome_datasets[h]+'-pct-'+str(pct_trainamento[i])+'- Bagging com Main ['+str(j)+']')
             
             # escrevendo os resultados obtidos
             tabela.Adicionar_Sheet_Linha(num_model, j, [acuracia, auc, f1measure, gmean])
@@ -175,7 +175,7 @@ for h in range(len(nome_datasets)):
             # 3.2.3. End ###################################################################################
             
             
-            # 3.2.4. Bagging com Perceptron ################################################################
+            # 3.2.4. Bagging com Main ################################################################
             # numero do modelo na tabela 
             num_model = 3
             
@@ -191,7 +191,7 @@ for h in range(len(nome_datasets)):
             pred = bg.predict(x_test)
             
             # printando os resultados
-            acuracia, auc, f1measure, gmean = printar_resultados(y_test, pred, nome_datasets[h]+'-pct-'+str(pct_trainamento[i])+'- Random Subspace com Perceptron ['+str(j)+']')
+            acuracia, auc, f1measure, gmean = printar_resultados(y_test, pred, nome_datasets[h]+'-pct-'+str(pct_trainamento[i])+'- Random Subspace com Main ['+str(j)+']')
             
             # escrevendo os resultados obtidos
             tabela.Adicionar_Sheet_Linha(num_model, j, [acuracia, auc, f1measure, gmean])

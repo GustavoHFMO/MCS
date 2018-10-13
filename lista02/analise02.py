@@ -235,6 +235,6 @@ data = ['kc1', 'kc2']
 #gerar_boxplot_metrica_geral_onedata(data[0], metricas[4])
 #gerar_boxplot_metrica_geral_onedata(data[1], metricas[2])
 
-gerar_boxplot_validacao(data[1], metricas[3])
+gerar_boxplot_metrica_geral_onedata(data[1], metricas[3])
 
 

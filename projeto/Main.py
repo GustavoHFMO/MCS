@@ -3,95 +3,66 @@ Created on 24 de set de 2018
 @author: gusta
 '''
 
-from projeto.streams.readers.arff_reader import ARFFReader
-from sklearn.neighbors import NearestNeighbors
-from projeto.Dynse import ClassificationEngine
+from Projeto.streams.readers.arff_reader import ARFFReader
+from sklearn.cross_validation import StratifiedKFold
+from Projeto.Dynse import ClassificationEngine
 from sklearn.naive_bayes import GaussianNB
-from projeto.Dynse import PrunningEngine
-from projeto.Dynse import Dynse
+from Projeto.Dynse import PrunningEngine
+from Projeto.Dynse import Dynse
 import pandas as pd
 import numpy as np
 
 
-def tratamentoDados(stream, vizinhos):
+def tratamentoDados(stream, train_size):
     '''
     metodo para ajustar o dataset conforme o artigo do Dynse
     '''
     
-    # variavel para salvar o novo stream
-    new_stream = []
-    
-    # ajustando o formato do stream
+    # obtendo os padroes e seus respectivos rotulos
     stream = np.asarray(stream)
-   
-    # repetir ate o dataset ficar vazio
-    while(len(stream)>vizinhos): 
-        
-        print("inicio:", len(stream))
+    df_x = stream[:,0:-1]
+    df_y = stream[:,-1]
     
-        # dividindo os dados para treinamento e teste
-        train = stream[:,0:-1]
-        
-        # ajustando o knn sobre os dados
-        nbrs = NearestNeighbors(n_neighbors=vizinhos, algorithm='ball_tree')
-        nbrs.fit(train)
-        
-        # sorteando uma isntancia aleatoria
-        index = np.random.randint(low=0, high=len(stream))
-        
-        # obtendo a observacao sorteada
-        obs = stream[index]
-        
-        # obtendo os vizinhos de obs
-        _, indices = nbrs.kneighbors([obs[0:-1]])
-        
-        # removendo o indice pesquisado
-        indices = indices[0]
-        
-        # salvando os vizinhos de obs no novo stream
-        for j in indices:
-            # salvando no novo dataset
-            new_stream.append(stream[j])
-            
-        # excluindo os itens adicionados
-        stream = np.delete(stream, indices, 0)
-        
-        # salvando as instancias de teste de forma aleatoria
-        indices = []
-        for x in range(vizinhos):
-            
-            # gerando um numero aleatorio
-            if(x == 0):
-                j = np.random.randint(low=0, high=len(stream))
-                indices.append(j)
-            else:
-                while(True):
-                    j = np.random.randint(low=0, high=len(stream))
-                    if(j not in indices):
-                        indices.append(j)
-                        break
-                    
-            # salvando no novo dataset
-            new_stream.append(stream[j])
-            
-        
-        # excluindo os itens adicionados
-        stream = np.delete(stream, indices, 0)
-        
+    # quantidade de folds
+    qtd_folds = int(len(stream)/(2*train_size))
     
+    # dividindo os dados em folds
+    skf = StratifiedKFold(df_y, n_folds=qtd_folds)
+                
+    # tomando os indices para treinamento e teste
+    train_index, test_index = next(iter(skf))
+                        
+    # obtendo os conjuntos de dados para treinamento e teste
+    x_train = df_x[train_index]
+    y_train = df_y[train_index]
+    x_test = df_x[test_index]
+    y_test = df_y[test_index]
+    
+    # juntando os dados
+    stream_train = np.zeros((x_train.shape[0], x_train.shape[1]+1), dtype='str')
+    stream_train[:, 0:-1] = x_train
+    stream_train[:,-1] = y_train
+    
+    stream_test = np.zeros((x_test.shape[0], x_test.shape[1]+1), dtype='str')
+    stream_test[:, 0:-1] = x_test
+    stream_test[:,-1] = y_test
+    
+    # transformando em stream
+    stream = np.concatenate((stream_train, stream_test))
+
     # retornando o novo dataset
-    return np.asarray(new_stream)
+    return stream
 
 def main():
     
     # definindo o dataset
-    datasets = ['STAGGER', 'SEA', 'SEARec', 'optdigits', 'letter']
-    step_sizes = [500, 500, 220, 100, 100, 50]
-    train_sizes = [250, 250, 20, 50, 100, 50]
+    #datasets = ['STAGGER', 'SEA', 'SEARec', 'optdigits', 'letter']
+    #step_sizes = [500, 500, 220, 100, 100, 100]
+    #train_sizes = [250, 250, 20, 50, 50, 50]
     
-    #datasets = ['optdigits', 'letter']
-    #step_sizes = [50, 50]
-    #train_sizes = [50, 50]
+    datasets = ['optdigits', 'letter']
+    step_sizes = [100, 100]
+    train_sizes = [50, 50]
     
     for i in range(len(datasets)): 
     
@@ -140,7 +111,7 @@ def main():
                     dynse.NAME = dynse.NAME+"-"+datasets[i]+"-"+str(x)
                      
                     #6. executando o framework
-                    dynse.prequential(labels=labels, 
+                    dynse.prequential_batch(labels=labels, 
                                       stream=stream_records, 
                                       step_size=step_sizes[i],
                                       train_size=train_sizes[i])

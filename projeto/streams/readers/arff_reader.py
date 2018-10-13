@@ -7,8 +7,8 @@ E-mail: apesaran -at- uottawa -dot- ca / alipsgh -at- gmail -dot- com
 
 import re
 
-from projeto.data_structures.attribute import Attribute
-from projeto.dictionary.tornado_dictionary import TornadoDic
+from Projeto.data_structures.attribute import Attribute
+from Projeto.dictionary.tornado_dictionary import TornadoDic
 
 
 class ARFFReader:
