@@ -64,8 +64,10 @@ def main():
     metricas = ['acuracy', 'auc', 'fmeasure', 'gmean']
     data = ['kc1', 'kc2']
     
+    m = 3
     # gerando os boxplots para o relatorio
-    gerar_boxplot_geral(data[1], metricas[3])
+    gerar_boxplot_geral(data[0], metricas[m])
+    gerar_boxplot_geral(data[1], metricas[m])
 
 if __name__ == "__main__":
     main()

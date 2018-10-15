@@ -5,7 +5,7 @@ Created on 21 de ago de 2018
 
 # instanciando todas as libs necessarias
 from deslib.util.diversity import Q_statistic, disagreement_measure
-from lista02.geradores_tabela.Tabela_excel import Tabela_excel
+from Lista02.geradores_tabela.Tabela_excel import Tabela_excel
 from sklearn.ensemble.bagging import BaggingClassifier
 from sklearn.linear_model.perceptron import Perceptron
 from sklearn.cross_validation import StratifiedKFold

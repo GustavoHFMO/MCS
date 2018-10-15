@@ -4,13 +4,15 @@ Created on 13 de out de 2018
 '''
 
 from sklearn.neighbors import NearestNeighbors
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 from sklearn.ensemble.bagging import BaggingClassifier
 from sklearn.linear_model.perceptron import Perceptron
 from sklearn.cross_validation import StratifiedKFold
-from deslib.dcs.lca import LCA
+from deslib.dcs.ola import OLA
 import pandas as pd
 import numpy as np
+import warnings
+warnings.filterwarnings("ignore")
 
 class Arquitetura:
     def __init__(self, n_vizinhos):
@@ -20,7 +22,7 @@ class Arquitetura:
         
         self.n_vizinhos = n_vizinhos
     
-    def kDN(self, x_query, y_pred):
+    def kDN(self, x, y):
         '''
         Metodo para computar o grau de dificuldade de cada observacao em um conjunto de dados
         :param: x: padroes dos dados
@@ -29,23 +31,42 @@ class Arquitetura:
         '''
         
         # instanciando os vizinhos mais proximos
-        nbrs = NearestNeighbors(n_neighbors=self.n_vizinhos+1, algorithm='ball_tree').fit(self.dsel_x)
+        nbrs = NearestNeighbors(n_neighbors=self.n_vizinhos+1, algorithm='ball_tree').fit(x)
+        
+        # variavel para salvar as probabilidades
+        dificuldades = []
+        
+        # for para cada instancia do dataset
+        for i in range(len(x)):
+            
+            # computando os vizinhos mais proximos para cada instancia
+            _, indices = nbrs.kneighbors([x[i]])
+            
+            # verificando o rotulo dos vizinhos
+            cont = 0
+            for j in indices[0]:
+                if(j != i and y[j] != y[i]):
+                    cont += 1
+                    
+            # computando a porcentagem
+            dificuldades.append(cont/(self.n_vizinhos+1))
+    
+        
+        return dificuldades
+
+    def neighbors(self, dsel, x_query):
+        '''
+        metodo para retornar apenas os indices dos vizinhos
+        '''
+        
+        # instanciando os vizinhos mais proximos
+        nbrs = NearestNeighbors(n_neighbors=self.n_vizinhos+1, algorithm='ball_tree').fit(dsel)
         
         # computando os vizinhos mais proximos para cada instancia
         _, indices = nbrs.kneighbors([x_query])
-            
-        # verificando o rotulo dos vizinhos
-        cont = 0
-        for i in indices[0]:
-            if(self.dsel_y[i] != y_pred):
-                cont += 1
-                    
-        # computando a porcentagem
-        dificuldade = cont/(self.n_vizinhos+1)
-
-        # retornando a dificuldade do exemplo
-        return dificuldade
-
+        
+        return indices
+        
     def fit(self, x, y, dsel_x, dsel_y):
         '''
         metodo para treinar a arquitetura de dois niveis
@@ -55,24 +76,42 @@ class Arquitetura:
         :dsel_y: rotulos da janela de validacao
         '''
         
-        # salvando a jaela de validacao
-        self.dsel_x = dsel_x
-        self.dsel_y = dsel_y
+        # salvando as dificuldades das instancias
+        self.H = self.kDN(x, y)
         
-        # treinando o modelo 1
-        self.levelone = KNeighborsClassifier(self.n_vizinhos)
+        # treinando o nivel 1 #########################################
+        self.levelone = SVC(self.n_vizinhos)
         self.levelone.fit(x, y)
+        
+        # realizando a previsao para o conjunto de treinamento
+        y_pred = self.levelone.predict(x)
+        
+        # salvando os indices das instancias que foram classificadas erradas
+        indices = [i for i in range(len(y_pred)) if y_pred[i] != y[i]]
+                
+        # obtendo as dificuldades
+        dificuldades = [self.H[i] for i in indices]
+        
+        # retirando a media do kdn dessas instancias
+        self.limiar = np.min(dificuldades)
+        ###############################################################
+        
+        # treinando o nivel 2 #########################################
+        # salvando a jaela de validacao
+        self.dsel_x = x
+        self.dsel_y = y
         
         # criando o ensemble
         self.ensemble = BaggingClassifier(base_estimator=Perceptron(), 
                                             max_samples=0.9, 
                                             max_features=1.0, 
-                                            n_estimators = 100)
+                                            n_estimators=100)
         self.ensemble.fit(x, y)
         
         # treinando o modelo 2
-        self.leveltwo = LCA(self.ensemble.estimators_, self.n_vizinhos)
+        self.leveltwo = OLA(self.ensemble.estimators_, self.n_vizinhos)
         self.leveltwo.fit(self.dsel_x, self.dsel_y)
+        ###############################################################
     
     def predict_one(self, x):
         '''
@@ -80,17 +119,20 @@ class Arquitetura:
         :x: padrao a ser predito
         '''
         
-        # realizando a predicao com o knn
-        y_pred = self.levelone.predict([x])[0]
+        # obtendo a vizinhanca do exemplo
+        indices = self.neighbors(self.dsel_x, x)[0]
         
-        # verificando a dificuldade do exemplo
-        dificuldade = self.kDN(x, y_pred)
-
+        # dificuldade da regiao
+        dificuldades = [self.H[i] for i in indices]
+        
+        # media da dificuldadde da regiao
+        media = np.max(dificuldades)
+        
         # verificando a dificuldade da instancia
-        if(dificuldade > 0.3):
+        if(media >= self.limiar):
             return self.leveltwo.predict(np.array([x]))[0]
         else:
-            return y_pred
+            return self.levelone.predict(np.array([x]))[0]
     
     def predict(self, x):
         '''
