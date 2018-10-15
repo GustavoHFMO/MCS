@@ -8,10 +8,10 @@ from sklearn.svm import SVC
 from sklearn.ensemble.bagging import BaggingClassifier
 from sklearn.linear_model.perceptron import Perceptron
 from sklearn.cross_validation import StratifiedKFold
-from deslib.dcs.ola import OLA
 import pandas as pd
 import numpy as np
 import warnings
+from deslib.des.knora_u import KNORAU
 warnings.filterwarnings("ignore")
 
 class Arquitetura:
@@ -66,8 +66,61 @@ class Arquitetura:
         _, indices = nbrs.kneighbors([x_query])
         
         return indices
+    
+    def hardInstances(self, x, y, limiar):
+        '''
+        Metodo para retornar um subconjunto de validacao apenas com as instacias faceis
+        :param: x: padroes dos dados
+        :param: y: respectivos rotulos
+        :return: x_new, y_new: 
+        '''
         
-    def fit(self, x, y, dsel_x, dsel_y):
+        # computando as dificulades para cada instancia
+        dificuldades = self.kDN(x, y)
+        
+        # variaveis para salvar as novas instancias
+        x_new = []
+        y_new = []
+        
+        # salvando apenas as instancias faceis
+        for i in range(len(dificuldades)):
+            if(dificuldades[i] > limiar):
+                x_new.append(x[i])
+                y_new.append(y[i])
+                
+        return np.asarray(x_new), np.asarray(y_new)
+    
+    def neighborhoodDifficulty(self, dsel, x_query, H):
+        '''
+        metodo para calcular o grau de dificuldade da vizinhanca
+        :dsel: dataset para pesquisar os vizinhos
+        :x_query: instancia a ser pesquisada
+        :H: dificuldade do dataset dsel
+        '''
+        
+        # obtendo a vizinhanca do exemplo
+        indices = self.neighbors(dsel, x_query)[0]
+        
+        # dificuldade da regiao
+        dificuldades = [H[i] for i in indices]
+        
+        # media da dificuldadde da regiao
+        return np.min(dificuldades)
+    
+    def defineThreshold(self, indices):
+        '''
+        Metodo para definir o threshold
+        :indices: os indices das instancias que foram classificadas incorretamente
+        '''
+        
+        # obtendo a vizinhanca do exemplo
+        lista = []
+        for i in indices:
+            lista.append(self.neighborhoodDifficulty(self.x_train, self.x_train[i], self.H))
+        
+        return np.mean(lista)
+    
+    def fit(self, x, y):
         '''
         metodo para treinar a arquitetura de dois niveis
         :x: dados para treinamento
@@ -76,57 +129,72 @@ class Arquitetura:
         :dsel_y: rotulos da janela de validacao
         '''
         
+        # salvando os dados de trainamento
+        self.x_train = x
+        self.y_train = y
+        
         # salvando as dificuldades das instancias
         self.H = self.kDN(x, y)
         
         # treinando o nivel 1 #########################################
-        self.levelone = SVC(self.n_vizinhos)
+        self.levelone = SVC()
         self.levelone.fit(x, y)
         
         # realizando a previsao para o conjunto de treinamento
         y_pred = self.levelone.predict(x)
         
         # salvando os indices das instancias que foram classificadas erradas
-        indices = [i for i in range(len(y_pred)) if y_pred[i] != y[i]]
+        indices = [i for i in range(len(y)) if y_pred[i] != y[i]]
                 
-        # obtendo as dificuldades
-        dificuldades = [self.H[i] for i in indices]
-        
-        # retirando a media do kdn dessas instancias
-        self.limiar = np.min(dificuldades)
+        # obtendo o limiar de dificuldade do problema
+        self.limiar = self.defineThreshold(indices)
         ###############################################################
         
         # treinando o nivel 2 #########################################
-        # salvando a jaela de validacao
-        self.dsel_x = x
-        self.dsel_y = y
+        # obtendo as instancias dificeis
+        x_dificeis, y_dificeis = self.hardInstances(x, y, self.limiar)
         
         # criando o ensemble
         self.ensemble = BaggingClassifier(base_estimator=Perceptron(), 
                                             max_samples=0.9, 
                                             max_features=1.0, 
                                             n_estimators=100)
-        self.ensemble.fit(x, y)
+        self.ensemble.fit(x_dificeis, y_dificeis)
         
         # treinando o modelo 2
-        self.leveltwo = OLA(self.ensemble.estimators_, self.n_vizinhos)
-        self.leveltwo.fit(self.dsel_x, self.dsel_y)
+        self.leveltwo = KNORAU(self.ensemble.estimators_, self.n_vizinhos)
+        self.leveltwo.fit(x_dificeis, y_dificeis)
+        # verificando se o ola acerta os exemplos errados pelo svm
         ###############################################################
     
+    def predict_svm(self, x):
+        # to predict multiple examples
+        if(len(x.shape) > 1):
+            # returning all labels
+            return [self.levelone.predict(np.array([pattern]))[0] for pattern in x]
+            
+        # to predict only one example
+        else:
+            return self.levelone.predict(np.array([x]))[0]
+        
+    def predict_ola(self, x):
+        # to predict multiple examples
+        if(len(x.shape) > 1):
+            # returning all labels
+            return [self.leveltwo.predict(np.array([pattern]))[0] for pattern in x]
+            
+        # to predict only one example
+        else:
+            return self.leveltwo.predict(np.array([x]))[0]
+
     def predict_one(self, x):
         '''
         metodo para computar a previsao de um exemplo
         :x: padrao a ser predito
         '''
         
-        # obtendo a vizinhanca do exemplo
-        indices = self.neighbors(self.dsel_x, x)[0]
-        
-        # dificuldade da regiao
-        dificuldades = [self.H[i] for i in indices]
-        
         # media da dificuldadde da regiao
-        media = np.max(dificuldades)
+        media = self.neighborhoodDifficulty(self.x_train, x, self.H)
         
         # verificando a dificuldade da instancia
         if(media >= self.limiar):
@@ -150,7 +218,6 @@ class Arquitetura:
             return self.predict_one(x)
       
 def main():
-    
     
     # importando o dataset
     data = pd.read_csv('dataset/kc2.csv')
@@ -183,11 +250,30 @@ def main():
     train_accuracy = np.mean(predictions == y_train) * 100
     print('train accuracy: %.1f' % train_accuracy)
     
+    pred_svm = arq.predict_svm(x_train)
+    train_accuracy = np.mean(pred_svm == y_train) * 100
+    print('train accuracy - SVM: %.1f' % train_accuracy)
+    
+    '''
+    pred_ola = arq.predict_ola(x_train)
+    train_accuracy = np.mean(pred_ola == y_train) * 100
+    print('train accuracy - OLA: %.1f' % train_accuracy)
+    '''
+    
     # making predictions
     predictions = arq.predict(x_test)
     # evaluating the accuracy for the test dataset
     test_accuracy = np.mean(predictions == y_test) * 100
     print('test accuracy: %.1f' % test_accuracy)
     
+    pred_svm = arq.predict_svm(x_test)
+    test_accuracy = np.mean(pred_svm == y_test) * 100
+    print('test accuracy - SVM: %.1f' % test_accuracy)
+    
+    '''
+    pred_ola = arq.predict_ola(x_test)
+    test_accuracy = np.mean(pred_ola == y_test) * 100
+    print('test accuracy - OLA: %.1f' % test_accuracy)
+    '''
 if __name__ == '__main__':
     main()

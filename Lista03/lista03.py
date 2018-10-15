@@ -177,7 +177,7 @@ def main():
             # importando o metodo
             arq = Arquitetura(n_vizinhos)
             # treinando o metodo
-            arq.fit(x_train, y_train, x_train, y_train)
+            arq.fit(x_train, y_train)
             # realizando a previsao
             pred = arq.predict(x_test)
             # printando os resultados
