@@ -4,7 +4,6 @@ Created on 13 de out de 2018
 '''
 
 from sklearn.neighbors import NearestNeighbors
-from sklearn.svm import SVC
 from sklearn.ensemble.bagging import BaggingClassifier
 from sklearn.linear_model.perceptron import Perceptron
 from sklearn.cross_validation import StratifiedKFold
@@ -12,6 +11,7 @@ import pandas as pd
 import numpy as np
 import warnings
 from deslib.des.knora_u import KNORAU
+from sklearn.neighbors import KNeighborsClassifier
 warnings.filterwarnings("ignore")
 
 class Arquitetura:
@@ -137,7 +137,7 @@ class Arquitetura:
         self.H = self.kDN(x, y)
         
         # treinando o nivel 1 #########################################
-        self.levelone = SVC()
+        self.levelone = KNeighborsClassifier(self.n_vizinhos)
         self.levelone.fit(x, y)
         
         # realizando a previsao para o conjunto de treinamento
@@ -220,7 +220,7 @@ class Arquitetura:
 def main():
     
     # importando o dataset
-    data = pd.read_csv('dataset/kc2.csv')
+    data = pd.read_csv('dataset/kc1.csv')
         
     # obtendo os padroes e seus respectivos rotulos
     df_x = np.asarray(data.iloc[:,0:-1])
@@ -242,7 +242,7 @@ def main():
     arq = Arquitetura(7)
     
     # treinando o metodo
-    arq.fit(x_train, y_train, x_train, y_train)
+    arq.fit(x_train, y_train)
     
     # making predictions
     predictions = arq.predict(x_train)

@@ -24,7 +24,7 @@ def tratamentoDados(stream, train_size):
     df_y = stream[:,-1]
     
     # quantidade de folds
-    qtd_folds = int(len(stream)/(2*train_size))
+    qtd_folds = 10
     
     # dividindo os dados em folds
     skf = StratifiedKFold(df_y, n_folds=qtd_folds)
