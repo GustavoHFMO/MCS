@@ -27,17 +27,13 @@ def tratamentoDados(stream, train_size):
     qtd_folds = 10
     
     # dividindo os dados em folds
-    skf = StratifiedKFold(df_y, n_folds=qtd_folds)
-                
+    kf = KFold(n_splits=qtd_folds, random_state=None, shuffle=False)
+
     # tomando os indices para treinamento e teste
-    train_index, test_index = next(iter(skf))
-                        
-    # obtendo os conjuntos de dados para treinamento e teste
-    x_train = df_x[train_index]
-    y_train = df_y[train_index]
-    x_test = df_x[test_index]
-    y_test = df_y[test_index]
-    
+    for train_index, test_index in kf.split(df_x):
+        x_train, x_test = df_x[train_index], df_x[test_index]
+        y_train, y_test = df_y[train_index], df_y[test_index]
+
     # juntando os dados
     stream_train = np.zeros((x_train.shape[0], x_train.shape[1]+1), dtype='str')
     stream_train[:, 0:-1] = x_train
