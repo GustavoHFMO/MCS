@@ -60,7 +60,7 @@ def main():
     #step_sizes = [500, 500, 220, 100, 100, 100]
     #train_sizes = [250, 250, 20, 50, 50, 50]
     
-    datasets = ['optdigits']
+    datasets = ['letter']
     step_sizes = [100]
     train_sizes = [50]
     
