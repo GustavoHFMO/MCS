@@ -4,7 +4,7 @@ Created on 24 de set de 2018
 '''
 
 from Projeto.streams.readers.arff_reader import ARFFReader
-from sklearn.cross_validation import StratifiedKFold
+from sklearn.model_selection import KFold
 from Projeto.Dynse import ClassificationEngine
 from sklearn.naive_bayes import GaussianNB
 from Projeto.Dynse import PrunningEngine
