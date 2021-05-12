@@ -1,4 +1,4 @@
-# MCS
+# MCS - Sistemas de Múltiplos Classificadores
 Implementações das listas exercícios da disciplina de Sistemas de Múltiplos Classificadores da pós-graduação em Inteligência Computacional do Centro de Informática (Cin) - UFPE para o semestre de 2018.2.
 
 ## Exercicio 1: Gerar pools homogêneos de classificadores usando Bagging e Random Subspace.
